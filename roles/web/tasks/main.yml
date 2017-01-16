@@ -1,0 +1,50 @@
+---
+- name: install packages
+  pacman:
+    name:
+      - nginx
+      - php
+      - php-fpm
+    state: present
+
+- name: copy nginx config
+  copy: src=nginx.conf dest=/etc/nginx/nginx.conf
+
+- name: create nginx servers directories
+  file:
+    path: /etc/nginx/servers-{{ item }}
+    state: directory
+  with_items:
+    - available
+    - enabled
+
+- name: copy nginx server config
+  copy: src=servers/default.conf dest=/etc/nginx/servers-available/default.conf
+
+- name: create server config symlink
+  file:
+    src: /etc/nginx/servers-available/default.conf
+    dest: /etc/nginx/servers-enabled/default.conf
+    state: link
+
+- name: delete default index page
+  file:
+    path: /usr/share/nginx/html/index.html
+    state: absent
+
+- name: create php index page
+  copy:
+    src: index.php
+    dest: /usr/share/nginx/html/index.php
+
+- name: start nginx
+  systemd:
+    name: nginx.service
+    state: restarted
+    enabled: true
+
+- name: start PHP
+  systemd:
+    name: php-fpm
+    state: restarted
+    enabled: true

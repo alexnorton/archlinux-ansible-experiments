@@ -1,0 +1,9 @@
+---
+- name: Provision Arch Linux
+  hosts: all
+  become: true
+  become_method: sudo
+
+  roles:
+    - common
+    - web
